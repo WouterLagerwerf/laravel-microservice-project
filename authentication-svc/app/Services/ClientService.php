@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Interfaces\ClientServiceInterface;
+use App\Interfaces\Services\ClientServiceInterface;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;

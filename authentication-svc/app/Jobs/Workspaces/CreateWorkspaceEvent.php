@@ -36,7 +36,7 @@ class CreateWorkspaceEvent implements ShouldQueue
         if (empty($this->workspace)) {
             return;
         }
-        $database = $dbService->getDatabaseSlug($this->workspace['uuid']);
+        $database = $dbService->getDatabaseSlug($this->workspace['endpoint']);
        
         if(! $dbService->doesDatabaseExist($database)) {
             if( ! $dbService->createDatabase($database)) {
@@ -45,6 +45,7 @@ class CreateWorkspaceEvent implements ShouldQueue
 
             $dbService->setDatabaseConnection($database);
             $dbService->migrateDatabase();
+            $dbService->seedDatabase();
         }
         
         // check if a password client exists 

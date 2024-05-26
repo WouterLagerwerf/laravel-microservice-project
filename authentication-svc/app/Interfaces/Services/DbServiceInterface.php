@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Interfaces\Services;
 
 interface DbServiceInterface 
 {   
@@ -37,6 +37,12 @@ interface DbServiceInterface
      * Runs Artisan migrate command
      */
     public function migrateDatabase(): bool;
+
+    /**
+     * Seed the database
+     * Runs Artisan db:seed command
+     */
+    public function seedDatabase(): bool;
     
     /**
      * Get the database slug
