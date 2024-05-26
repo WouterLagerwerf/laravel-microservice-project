@@ -9,6 +9,7 @@ use App\DTOs\Workspaces\WorkspaceDTO;
 use App\Exceptions\Workspaces\WorkspaceAlreadyExistsException;
 use App\Exceptions\Workspaces\CreateWorkspaceException;
 use Illuminate\Support\Str;
+use App\Jobs\Workspaces\CreateWorkspaceEvent;
 
 class WorkspaceService implements WorkspaceServiceInterface
 {
@@ -39,6 +40,11 @@ class WorkspaceService implements WorkspaceServiceInterface
             throw new CreateWorkspaceException(status: 500, message: 'Failed to create workspace');
         }
 
+        // make sure the workspace is created in the authentication microservice, later to be altered to check all microservice
+        if (! $workspace->auth_schema_created) {
+            CreateWorkspaceEvent::dispatch($workspace->toArray());
+        }
+
         return WorkspaceDTO::fromModel($workspace);
     }
 
@@ -55,14 +61,13 @@ class WorkspaceService implements WorkspaceServiceInterface
         if (empty($workspace)) {
             throw new WorkspaceNotFoundException(status: 404, message: 'Workspace not found');
         }
-        $workspace->fill($dto->toArray());
 
+        $workspace->fill($dto->toArray());
         try {
             $this->workspaceRepository->updateWorkspace($workspace);
         } catch (Exception $e) {
             throw new UpdateWorkspaceException(status: 500, message: 'Failed to update workspace');
         }
-
         return WorkspaceDTO::fromModel($workspace);
     }
 

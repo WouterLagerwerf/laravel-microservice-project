@@ -23,6 +23,11 @@ services:
       MYSQL_ROOT_PASSWORD: root_password
     ports:
       - "8082:80"
+  redis:
+    image: redis:6.0
+    container_name: redis
+    ports:
+      - "6379:6379"
 
 volumes:
   db_data:
