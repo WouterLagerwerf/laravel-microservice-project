@@ -74,8 +74,16 @@ This will make a MySQL container available and launch a webserver with phpMyAdmi
 
 3. Environment setup
 Make sure you have a `.env` file in the root of each svc folder. You can copy the `.env.example` file and rename it to `.env`
-
-Make sure each env file has the database pointing to the correct location, and if you want to make use of the queue system, you need to set the queue connection to an active SQS queue.
+In Your `.env` file, make sure you have the following environment variables set:
+```env
+QUEUE_CONNECTION=sns
+```
+This will set the queue connection to SNS. to achieve event-driven communication between the services we need each service to be able to publish and subscribe to events. This is achieved by using SNS as the queue driver.
+The package we are using is a custom build sns driver that i've written for this project:
+```bash	
+composer require wouterlagerwerf/laravel-sns-queue-driver
+```
+[Source code](https://github.com/WouterLagerwerf/laravel-sns-queue-driver)
 
 4. Setting up the database
 cd into the workspace svc by running the following command from the root of the project
@@ -88,6 +96,12 @@ php artisan db:check-and-create
 ```
 this will create the database and run the migrations
 
+5. Running queue workers
+To run the queue workers, run the following commands from the root of each svc
+```bash
+php artisan queue:work
+```
+This will start the queue worker and listen for incoming jobs. Allowing Event driven communication between the services.
 
 ### API Authentication
 The API for workspace management uses Laravel Passport Machine to Machine authentication. To authenticate the API, you need to create a client in Laravel Passport. To create a client, run the following command:
