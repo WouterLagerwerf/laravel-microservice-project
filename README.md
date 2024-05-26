@@ -1,6 +1,7 @@
 # Laravel Microservices Project
 
-This project is a fully functional demo for building a Microservices architecture SaaS E-commerce platform. The following tech stack will be used in this project:
+This project is a fully functional demo for building a Microservices architecture SaaS E-commerce platform. The following tech stack is used in this project:
+
 - **Frontend**: Next.js
 - **Backend**: Laravel 11
 - **Database**: MySQL & DynamoDB
@@ -18,101 +19,104 @@ This project is a fully functional demo for building a Microservices architectur
 - **Logging**: CloudWatch
 
 ## Project Structure
-High-level project structure is as follows:
+
+The high-level project structure is as follows:
 
 ![Project Architecture](architecture.png)
 
 ### Note
+
 The image above depicts the high-level architecture of the project. The actual project structure may vary. For example, resources like CDN, DNS, etc., are not shown in the image.
 
 ## Database Structure
-This application introduces the concept of workspaces. Workspaces represent the tenants of the system that utilize the app for E-commerce needs.
 
-Workspaces will act as the programmatic barrier between data of parties. This means that each workspace will have its own schema in the database of a microservice.
+This application introduces the concept of workspaces. Workspaces represent the tenants of the system that utilize the app for E-commerce needs. Workspaces act as the programmatic barrier between data of different parties. Each workspace will have its own schema in the database of a microservice.
 
-### User signs up for the application. Provides Username, Email, Password, and Business name.
-- A workspace record will be created in the Workspace service.
-- The Workspace service will dispatch events to generate a db schema on each microservice for the workspace.
-- After schema creation, a new user record will be created in the Authentication DB schema for the workspace.
+### User Sign-Up Process
 
-Because this project is mainly local, we are going to use the /<workspace_name> to identify which tenant we are working with. Normally, this would be done on the subdomain.
+1. User signs up for the application by providing Username, Email, Password, and Business name.
+2. A workspace record is created in the Workspace service.
+3. The Workspace service dispatches events to generate a database schema on each microservice for the workspace.
+4. After schema creation, a new user record is created in the Authentication DB schema for the workspace.
 
-An example of database and workspace resolution:
+In this project, we use the `/workspace_name` to identify which tenant we are working with. Normally, this would be done using subdomains.
+
+### Example
+
 - User registers with the business name: WOUTERBV.
-- After the onboarding process mentioned above, a general endpoint will be made available for this business, in this case: [https://example.com/WOUTERBV](https://example.com/WOUTERBV). This will be the generic endpoint utilized to resolve db schemas.
+- After the onboarding process, a general endpoint is made available for this business, e.g., [https://example.com/WOUTERBV](https://example.com/WOUTERBV). This endpoint resolves the database schemas.
 
-### An example of the database structure
+### Database Structure Example
+
 ![Database Structure](db_structure.png)
 
 ## Getting Started
+
 To get started with the project, follow the steps below:
 
 ### Prerequisites
-Make sure you have the following installed on your machine:
+
+Ensure you have the following installed on your machine:
 - Docker
 - Docker Compose
 - Node.js
-- php >= 8.2
+- PHP >= 8.2
 - Composer
 
 ### Installation
-1. Clone the repository
-```bash
-git clone https://github.com/WouterLagerwerf/laravel-microservice-project.git
-```
 
-2. Change directory to the project root
-```bash
-cd laravel-microservice-project
-```
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/WouterLagerwerf/laravel-microservice-project.git
+    ```
 
-Optional: If you don't have MySQL running locally, you can use the docker-compose file to start a MySQL container
-```bash
-docker-compose up -d
-```
-This will make a MySQL container available and launch a webserver with phpMyAdmin on port 8080
+2. Change directory to the project root:
+    ```bash
+    cd laravel-microservice-project
+    ```
 
-3. Environment setup
-Make sure you have a `.env` file in the root of each svc folder. You can copy the `.env.example` file and rename it to `.env`
-In Your `.env` file, make sure you have the following environment variables set:
-```env
-QUEUE_CONNECTION=sns
-```
-This will set the queue connection to SNS. to achieve event-driven communication between the services we need each service to be able to publish and subscribe to events. This is achieved by using SNS as the queue driver.
-The package we are using is a custom build sns driver that i've written for this project:
-```bash	
-composer require wouterlagerwerf/laravel-sns-queue-driver
-```
-[Source code](https://github.com/WouterLagerwerf/laravel-sns-queue-driver)
+3. Optional: Start a MySQL container using Docker Compose if MySQL is not running locally:
+    ```bash
+    docker-compose up -d
+    ```
+    This will launch a MySQL container and a webserver with phpMyAdmin on port 8080.
 
-4. Setting up the database
-cd into the workspace svc by running the following command from the root of the project
-```bash
-cd workspace-svc
-```
-run the following command to migrate the database
-```bash
-php artisan db:check-and-create
-```
-this will create the database and run the migrations
+4. Set up the environment:
+    - Make sure you have a `.env` file in the root of each service folder. Copy the `.env.example` file and rename it to `.env`.
+    - Ensure the following environment variables are set in your `.env` file:
+      ```env
+      QUEUE_CONNECTION=sns
+      ```
 
-5. Running queue workers
-To run the queue workers, run the following commands from the root of each svc
-```bash
-php artisan queue:work
-```
-This will start the queue worker and listen for incoming jobs. Allowing Event driven communication between the services.
+5. Install the custom SNS queue driver package:
+    ```bash
+    composer require wouterlagerwerf/laravel-sns-queue-driver
+    ```
+    [Source code](https://github.com/WouterLagerwerf/laravel-sns-queue-driver)
+
+6. Set up the database:
+    - Navigate to the workspace service directory:
+      ```bash
+      cd workspace-svc
+      ```
+    - Run the database migration command:
+      ```bash
+      php artisan db:check-and-create
+      ```
+
+7. Start the queue workers from the root of each service:
+    ```bash
+    php artisan queue:work
+    ```
 
 ### API Authentication
-The API for workspace management uses Laravel Passport Machine to Machine authentication. To authenticate the API, you need to create a client in Laravel Passport. To create a client, run the following command:
+
+The API for workspace management uses Laravel Passport for Machine-to-Machine authentication. To authenticate the API, create a client in Laravel Passport:
 ```bash
 php artisan passport:client --client
 ```
-This will create a client and return the client id and client secret. You can use these credentials to authenticate the API.
+This will create a client and return the client ID and client secret. Use these credentials to authenticate the API.
 
-### Using the other microservices.
-Once the migrations have been run for the workspace svc, you can start using the other services by using the POST `/api/workspaces` endpoint to create a workspace. This will dispatch events to create the database schemas for the workspace in the other applications and create a user in the authentication service.
+### Using Other Microservices
 
-After which, the password grant type can be used to authenticate the user and start using the other services.
-
-As of 25-05-2024, only the workspace svc and event triggers for db creation in the authentication svc have been implemented.
+After running the migrations for the workspace service, use the POST `/api/workspaces` endpoint to create a workspace. This action dispatches events to create the database schemas for the workspace in other applications and creates a user in the authentication service. After this, use the password grant type to authenticate the user and start using the other services.
