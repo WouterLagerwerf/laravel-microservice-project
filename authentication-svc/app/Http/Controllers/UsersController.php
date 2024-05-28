@@ -28,7 +28,7 @@ class UsersController extends Controller implements UserControllerInterface
     /**
      * Display a listing of all users.
      */
-    public function index(StoreUserRequest $request, string $workspace_endpoint): JsonResponse
+    public function index(Request $request, string $workspace_endpoint): JsonResponse
     {
         $users = $this->userService->getUsers();
         
